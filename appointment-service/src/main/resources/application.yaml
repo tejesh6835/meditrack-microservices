@@ -1,0 +1,67 @@
+server:
+  port: 8083
+
+spring:
+  profiles:
+    default: local
+  application:
+    name: appointment-service
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      availability:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 2
+        record-exceptions:
+          - feign.FeignException
+          - java.io.IOException
+        ignore-exceptions:
+          - org.meditrack.appointment.exception.BusinessException
+
+  timelimiter:
+    instances:
+      availability:
+        timeoutDuration: 5s
+
+  retry:
+    instances:
+      availability:
+        maxAttempts: 2
+        waitDuration: 500ms
+        retryExceptions:
+          - feign.FeignException$ServiceUnavailable
+          - feign.RetryableException
+        ignoreExceptions:
+          - org.meditrack.appointment.exception.BusinessException
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+  endpoint:
+    prometheus:
+      access: unrestricted
+

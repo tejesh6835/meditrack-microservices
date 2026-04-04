@@ -1,0 +1,19 @@
+{
+  "family": "api-gateway",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "containerDefinitions": [
+    {
+      "name": "api-gateway",
+      "image": "REPLACE_LATER",
+      "portMappings": [
+        {
+          "containerPort": 8080
+        }
+      ],
+      "essential": true
+    }
+  ]
+}

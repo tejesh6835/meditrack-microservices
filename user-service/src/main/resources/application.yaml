@@ -1,0 +1,27 @@
+server:
+  port: 8081
+
+spring:
+  profiles:
+    default: local
+
+  application:
+    name: user-service
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+  endpoint:
+    prometheus:
+      access: unrestricted

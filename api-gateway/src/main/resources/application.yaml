@@ -1,0 +1,89 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    default: local
+
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/registered-user/**,/api/registered-user
+          filters:
+            - name: RequestRateLimiter
+              args:
+                 key-resolver: "#{@userKeyResolver}"
+                 redis-rate-limiter.replenishRate: 10
+                 redis-rate-limiter.burstCapacity: 20
+            - name: CircuitBreaker
+              args:
+                name: usersCircuitBreaker
+                fallbackUri: forward:/fallback/user-service
+
+        - id: availability-service
+          uri: lb://availability-service
+          predicates:
+            - Path=/api/doctor-availability/**,/api/doctor-availability
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@userKeyResolver}"
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+            - name: CircuitBreaker
+              args:
+                name: availabilityCircuitBreaker
+                fallbackUri: forward:/fallback/availability-service
+
+        - id: appointment-service
+          uri: lb://appointment-service
+          predicates:
+            - Path=/api/appointments/**,/api/appointments
+          filters:
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@userKeyResolver}"
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+            - name: CircuitBreaker
+              args:
+                name: appointmentCircuitBreaker
+                fallbackUri: forward:/fallback/appointment-service
+
+resilience4j:
+  timelimiter:
+    instances:
+      appointmentCircuitBreaker:
+        timeoutDuration: 10s
+
+  circuitbreaker:
+    instances:
+      appointmentCircuitBreaker:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        slowCallDurationThreshold: 5s
+        waitDurationInOpenState: 10s
+
+management:
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+  endpoint:
+    prometheus:
+      access: unrestricted
+
+logging:
+  level:
+    org.springframework.cloud.gateway.filter.factory.RequestRateLimiterGatewayFilterFactory: DEBUG
