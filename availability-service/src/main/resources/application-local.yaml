@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/meditrack_availabilityservice
+    username: meditrack_user
+    password: meditrack123
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9000
+  data:
+    redis:
+          host: localhost
+          port: 6379
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+    propagation:
+      type: b3
+
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+

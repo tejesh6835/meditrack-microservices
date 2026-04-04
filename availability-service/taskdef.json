@@ -1,0 +1,21 @@
+{
+  "family": "availability-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::662354169141:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "availability-service",
+      "image": "DUMMY_IMAGE",
+      "portMappings": [
+        {
+          "containerPort": 8082,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+image: maven:3.9.6-eclipse-temurin-21
+
+pipelines:
+  branches:
+    main:
+
+      - step:
+          name: Build & Push Docker Image
+          services:
+            - docker
+          caches:
+            - maven
+          artifacts:
+            - taskdef-rendered.json
+
+          script:
+
+            # 1. Set variables
+            - export IMAGE_TAG=$BITBUCKET_COMMIT
+            - export ECR_REGISTRY=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
+            - export FULL_IMAGE_NAME=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+            # 2. Build JAR
+            - mvn clean package -DskipTests
+
+            # 3. Install tools
+            - apt-get update && apt-get install -y python3-pip unzip jq
+            - pip3 install awscli
+
+            # 4. Login to ECR
+            - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+
+            # 5. Build Docker image
+            - docker build -t $FULL_IMAGE_NAME .
+
+            # 6. Push image
+            - docker push $FULL_IMAGE_NAME
+
+            # 7. Replace image in task definition
+            - jq --arg IMAGE "$FULL_IMAGE_NAME" '.containerDefinitions[0].image = $IMAGE' taskdef.json > taskdef-rendered.json
+
+      - step:
+          name: Deploy to ECS
+          script:
+            - apt-get update && apt-get install -y python3-pip unzip jq
+            - pip3 install awscli
+
+            - export TASK_REVISION_ARN=$(aws ecs register-task-definition --cli-input-json file://taskdef-rendered.json --query 'taskDefinition.taskDefinitionArn' --output text)
+
+            - aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --task-definition $TASK_REVISION_ARN
+
+definitions:
+  services:
+    docker:
+      memory: 2048
