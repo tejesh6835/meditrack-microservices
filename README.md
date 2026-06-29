@@ -9,12 +9,16 @@
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
-
 ## Overview
 
 MediTrack is a production-style backend system built using Spring Boot microservices that enables secure user management, doctor availability tracking, and appointment scheduling. It follows modern distributed architecture with centralized authentication, API Gateway routing, event-driven communication, and cloud deployment.
 
 ---
+
+## Architecture Diagram
+
+<img width="5044" height="3300" alt="image" src="https://github.com/user-attachments/assets/c3fc8406-cac7-41a3-a07d-51760049d370" />
+
 
 ### 🧾 Registration Flow
 
