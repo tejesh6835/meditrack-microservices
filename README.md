@@ -17,7 +17,7 @@ MediTrack is a production-style backend system built using Spring Boot microserv
 
 ## Architecture Diagram
 
-<img width="5044" height="3300" alt="image" src="https://github.com/user-attachments/assets/c3fc8406-cac7-41a3-a07d-51760049d370" />
+<img width="6352" height="3764" alt="image" src="https://github.com/user-attachments/assets/23c2c070-a77e-4e1b-a453-6c95d0ce96f7" />
 
 
 ### 🧾 Registration Flow
